@@ -1,29 +1,33 @@
 const express = require("express");
 const cors = require("cors");
-const { Groq } = require("groq-sdk");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
-app.use(cors()); // This allows your website to talk to this server
+app.use(cors());
 app.use(express.json());
 
-// This looks for your key in a safe "Environment Variable"
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Initialize Gemini with your Environment Variable
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/chat", async (req, res) => {
   try {
     const { message, rangerPrompt } = req.body;
+    
+    // Choose the Gemini model
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const completion = await groq.chat.completions.create({
-      messages: [
-        { role: "system", content: rangerPrompt },
-        { role: "user", content: message },
-      ],
-      model: "llama3-8b-8192",
-    });
+    // Combine the Ranger personality with the user's message
+    const prompt = `System: ${rangerPrompt}\n\nUser: ${message}`;
+    
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-    res.json({ text: completion.choices[0].message.content });
+    res.json({ text: text });
+
   } catch (error) {
-    res.status(500).json({ error: "Mission Failed" });
+    console.error("GEMINI ERROR:", error.message);
+    res.status(500).json({ error: "Mission Failed", details: error.message });
   }
 });
 
