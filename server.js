@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize Gemini with your Environment Variable
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI("AIzaSyChFz88FKwoWyiEcN8UqiaJhVBsl-ZhY6s");
 
 app.post("/chat", async (req, res) => {
   try {
@@ -33,3 +33,4 @@ app.post("/chat", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`FinRangers HQ active on port ${PORT}`));
+
