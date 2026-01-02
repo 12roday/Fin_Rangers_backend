@@ -25,11 +25,6 @@ app.post("/chat", async (req, res) => {
 
     res.json({ text: text });
 
-  } catch (error) {
-    console.error("GEMINI ERROR:", error.message);
-    res.status(500).json({ error: "Mission Failed", details: error.message });
-  }
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`FinRangers HQ active on port ${PORT}`));
@@ -60,19 +55,11 @@ app.post("/chat", async (req, res) => {
     const text = response.text();
 
     res.json({ text: text });
-
-  } catch (error) {
-    // This sends the REAL error back to your website screen
-    console.error("DEBUG ERROR:", error.message);
-    res.status(500).json({ 
-      error: "Mission Failed", 
-      details: error.message,
-      suggestion: "Check Render Environment Variables"
-    });
-  }
+ Server Error: Mission Failed
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`FinRangers HQ active on port ${PORT}`));
+
 
 
