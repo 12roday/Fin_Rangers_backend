@@ -33,7 +33,9 @@ app.post("/chat", async (req, res) => {
 
     // Initialize inside the route to prevent startup crashes
     const genAI = new GoogleGenerativeAI(apiKey.trim());
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+// NEW (Use the 2026 current version)
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const result = await model.generateContent([rangerPrompt, message]);
     const response = await result.response;
@@ -57,3 +59,4 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Ranger Server active on port ${PORT}`);
 });
+
