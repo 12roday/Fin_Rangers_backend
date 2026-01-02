@@ -6,39 +6,39 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 1. CATCH-ALL ERROR LOGGER (Add this at the top)
+process.on('uncaughtException', (err) => {
+  console.error('SERVER CRASHED:', err.stack);
+});
+
 app.post("/chat", async (req, res) => {
-  console.log("Request received!"); // This should force a log line
-  
   try {
     const { message, rangerPrompt } = req.body;
-
-    // Safety check 1: Environment Variable
+    
     if (!process.env.GEMINI_API_KEY) {
-      throw new Error("RENDER_ENV_MISSING: GEMINI_API_KEY is not set in Render settings.");
+      return res.status(500).json({ text: "ERROR: GEMINI_API_KEY is missing in Render Settings." });
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
-    const prompt = `System: ${rangerPrompt}\n\nUser: ${message}`;
-    const result = await model.generateContent(prompt);
+
+    // Simple prompt structure
+    const result = await model.generateContent([rangerPrompt, message]);
     const response = await result.response;
     const text = response.text();
 
     res.json({ text: text });
 
   } catch (error) {
-    // This part sends the ACTUAL error back to your website screen
-    console.error("CRITICAL ERROR:", error.message);
-    res.status(500).json({ 
-      text: "🚨 SERVER ERROR: " + error.message 
-    });
+    console.error("GEMINI ERROR:", error.message);
+    res.status(500).json({ text: "HQ Error: " + error.message });
   }
 });
 
-// Root route to test if the server is even awake
-app.get("/", (req, res) => res.send("FinRangers HQ is Online and Waiting."));
+// Root route for health check
+app.get("/", (req, res) => res.send("FinRangers Server is UP."));
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, "0.0.0.0", () => console.log(`Server started on port ${PORT}`));
-
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server is listening on port ${PORT}`);
+});
