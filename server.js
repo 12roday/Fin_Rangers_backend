@@ -7,18 +7,20 @@ app.use(cors());
 app.use(express.json());
 
 app.post("/chat", async (req, res) => {
+  console.log("Request received!"); // This should force a log line
+  
   try {
     const { message, rangerPrompt } = req.body;
-    
-    // 1. Check if the key even exists
+
+    // Safety check 1: Environment Variable
     if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: "API Key is MISSING in Render Environment settings!" });
+      throw new Error("RENDER_ENV_MISSING: GEMINI_API_KEY is not set in Render settings.");
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `System: ${rangerPrompt}\n\nUser: ${message}`;
     
+    const prompt = `System: ${rangerPrompt}\n\nUser: ${message}`;
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
@@ -26,13 +28,17 @@ app.post("/chat", async (req, res) => {
     res.json({ text: text });
 
   } catch (error) {
-    // 2. This will send the EXACT error message to your chat bubble
+    // This part sends the ACTUAL error back to your website screen
+    console.error("CRITICAL ERROR:", error.message);
     res.status(500).json({ 
-      error: "Mission Failed", 
-      details: error.message 
+      text: "🚨 SERVER ERROR: " + error.message 
     });
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`FinRangers HQ active on port ${PORT}`));
+// Root route to test if the server is even awake
+app.get("/", (req, res) => res.send("FinRangers HQ is Online and Waiting."));
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, "0.0.0.0", () => console.log(`Server started on port ${PORT}`));
+
