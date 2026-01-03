@@ -1,35 +1,35 @@
 const express = require("express");
 const cors = require("cors");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+require('dotenv').config(); // Optional for local testing, good practice
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// VERSION MARKER: v2.5.0 - If you don't see this in logs, Render hasn't updated!
-const MODEL_NAME = "gemini-2.5-flash"; 
+// USE process.env HERE INSTEAD OF THE HARDCODED KEY
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/chat", async (req, res) => {
   try {
+    // We expect the frontend to send the 'message' AND the 'rangerPrompt' (personality)
     const { message, rangerPrompt } = req.body;
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    
-    // We are forcing 2.5 Flash here
-    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
-    const result = await model.generateContent([rangerPrompt, message]);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Combine them
+    const prompt = `${rangerPrompt}\n\nUser: ${message}`;
+
+    const result = await model.generateContent(prompt);
     const response = await result.response;
-    res.json({ text: response.text() });
+    const text = response.text();
 
+    res.json({ text: text });
   } catch (error) {
-    console.error("LOGS SHOWING MODEL:", MODEL_NAME);
-    res.status(500).json({ text: "HQ Error: " + error.message });
+    console.error("GEMINI ERROR:", error.message);
+    res.status(500).json({ error: "Mission Failed", details: error.message });
   }
 });
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`--- FINRANGERS DEPLOYED ---`);
-  console.log(`Target Model: ${MODEL_NAME}`);
-  console.log(`Port: ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`FinRangers HQ active on port ${PORT}`));
