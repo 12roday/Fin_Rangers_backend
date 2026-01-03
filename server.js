@@ -32,8 +32,8 @@ app.post("/chat", async (req, res) => {
     }
 
     const { message, rangerPrompt } = req.body;
- // gemini-1.5-pro is the smartest stable model currently available via API
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+// This is the specific version ID that is guaranteed to work
+const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
     const prompt = `${rangerPrompt}\n\nUser: ${message}`;
 
     const result = await model.generateContent(prompt);
@@ -52,4 +52,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 FinRangers HQ active on port ${PORT}`);
 });
+
 
